@@ -21,7 +21,7 @@ class AutoEncoderModel(model.MXModel):
         self.internal_act = internal_act
         self.output_act = output_act
 
-        self.data = mx.symbol.Variable('data')
+        self.data = mx.symbol.Variable('data');
         for i in range(self.N):
             if i == 0:
                 decoder_act = input_act

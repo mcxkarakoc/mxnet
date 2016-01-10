@@ -127,11 +127,13 @@ class PrefetchingIter(DataIter):
         else:
             self.provide_data = sum([[(r[n], s) for n, s in i.provide_data] \
                                     for r, i in zip(rename_data, iters)], [])
+
         if rename_label is None:
             self.provide_label = sum([i.provide_label for i in iters], [])
         else:
             self.provide_label = sum([[(r[n], s) for n, s in i.provide_label] \
-                                    for r, i in zip(rename_label, iters)], [])
+                                  for r, i in zip(rename_label, iters)], [])
+
         self.batch_size = self.provide_data[0][1][0]
         self.data_ready = [threading.Event() for i in range(self.n_iter)]
         self.data_taken = [threading.Event() for i in range(self.n_iter)]
@@ -375,11 +377,13 @@ class MXDataIter(DataIter):
         self.first_batch = None
         self.first_batch = self.next()
         data = self.first_batch.data[0]
-        label = self.first_batch.label[0]
+        # MC-TODO:  empty label list for unsupervised learning
+        label = []; #self.first_batch.label[0]
 
-        # properties
-        self.provide_data = [(data_name, data.shape)]
-        self.provide_label = [(label_name, label.shape)]
+        # properties MC-TODO
+        self.provide_data = [(data_name, data.shape)];
+        # MC-TODO:  empty label list for unsupervised learning
+        self.provide_label = []; #[(label_name, label.shape)]
         self.batch_size = data.shape[0]
 
 
@@ -403,7 +407,8 @@ class MXDataIter(DataIter):
 
     def next(self):
         if self._debug_skip_load and not self._debug_at_begin:
-            return  DataBatch(data=[self.getdata()], label=[self.getlabel()], pad=self.getpad(),
+             # MC-TODO:  empty label list for unsupervised learning : self.getlabel()            
+            return  DataBatch(data=[self.getdata()], label=[], pad=self.getpad(),
                               index=self.getindex())
         if self.first_batch is not None:
             batch = self.first_batch
@@ -413,7 +418,8 @@ class MXDataIter(DataIter):
         next_res = ctypes.c_int(0)
         check_call(_LIB.MXDataIterNext(self.handle, ctypes.byref(next_res)))
         if next_res.value:
-            return DataBatch(data=[self.getdata()], label=[self.getlabel()], pad=self.getpad(),
+             # MC-TODO:  empty label list for unsupervised learning : self.getlabel()
+            return DataBatch(data=[self.getdata()], label=[], pad=self.getpad(),
                              index=self.getindex())
         else:
             raise StopIteration

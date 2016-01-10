@@ -64,8 +64,7 @@ inline void Concatenate(const std::vector<mshadow::Tensor<xpu, dim> > &input,
 template<typename xpu, int dim>
 void Split(const mshadow::Tensor<xpu, dim> &input,
            std::vector<mshadow::Tensor<xpu, dim> > *output,
-           const int dimension,
-           std::vector<bool> mask = std::vector<bool>(31, true)) {
+           const int dimension) {
   using mshadow::expr::concat;
   using mshadow::expr::slice;
   std::vector<mshadow::Tensor<xpu, dim> > out = *output;
@@ -75,7 +74,7 @@ void Split(const mshadow::Tensor<xpu, dim> &input,
     case 0: {
       for (index_t i = 0; i < size; ++i) {
         index_t end = begin + out[i].size(0);
-        if (mask[i]) out[i] = slice<0>(input, begin, end);
+        out[i] = slice<0>(input, begin, end);
         begin = end;
       }
       break;
@@ -83,7 +82,7 @@ void Split(const mshadow::Tensor<xpu, dim> &input,
     case 1: {
       for (index_t i = 0; i < size; ++i) {
         index_t end = begin + out[i].size(1);
-        if (mask[i]) out[i] = slice<1>(input, begin, end);
+        out[i] = slice<1>(input, begin, end);
         begin = end;
       }
       break;
@@ -91,7 +90,7 @@ void Split(const mshadow::Tensor<xpu, dim> &input,
     case 2: {
       for (index_t i = 0; i < size; ++i) {
         index_t end = begin + out[i].size(2);
-        if (mask[i]) out[i] = slice<2>(input, begin, end);
+        out[i] = slice<2>(input, begin, end);
         begin = end;
       }
       break;
@@ -99,7 +98,7 @@ void Split(const mshadow::Tensor<xpu, dim> &input,
     case 3: {
       for (index_t i = 0; i < size; ++i) {
         index_t end = begin + out[i].size(3);
-        if (mask[i]) out[i] = slice<3>(input, begin, end);
+        out[i] = slice<3>(input, begin, end);
         begin = end;
       }
       break;

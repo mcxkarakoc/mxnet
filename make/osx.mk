@@ -28,25 +28,25 @@ export NVCC = nvcc
 DEBUG = 0
 
 # the additional link flags you want to add
-ADD_LDFLAGS =
+ADD_LDFLAGS = -L/usr/local/opt/openblas/lib -L/usr/local/cuda/lib -L/usr/local/cudnn/lib -L/usr/local/intel/mkl/lib -Wl,-rpath,/usr/local/cuda/lib -Wl,-rpath,/usr/local/cudnn/lib
 
 # the additional compile flags you want to add
-ADD_CFLAGS =
+ADD_CFLAGS = -I/usr/local/opt/openblas/include -I/usr/local/cudnn/include
 
 #---------------------------------------------
 # matrix computation libraries for CPU/GPU
 #---------------------------------------------
 
 # whether use CUDA during compile
-USE_CUDA = 0
+USE_CUDA = 1
 
 # add the path to CUDA libary to link and compile flag
 # if you have already add them to enviroment variable, leave it as NONE
 # USE_CUDA_PATH = /usr/local/cuda
-USE_CUDA_PATH = NONE
+USE_CUDA_PATH = /usr/local/cuda
 
 # whether use CUDNN R3 library
-USE_CUDNN = 0
+USE_CUDNN = 1
 
 # whether use cuda runtime compiling for writing kernels in native language (i.e. Python)
 USE_NVRTC = 0
@@ -57,7 +57,7 @@ USE_NVRTC = 0
 USE_OPENCV = 1
 
 # use openmp for parallelization
-USE_OPENMP = 0
+USE_OPENMP = 1
 
 # choose the version of blas you want to use
 # can be: mkl, blas, atlas, openblas
@@ -65,7 +65,7 @@ USE_BLAS = apple
 
 # add path to intel libary, you may need it for MKL, if you did not add the path
 # to enviroment variable
-USE_INTEL_PATH = NONE
+USE_INTEL_PATH = /usr/local/intel
 
 #----------------------------
 # distributed computing

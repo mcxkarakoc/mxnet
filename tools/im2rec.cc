@@ -22,6 +22,79 @@
 #include <opencv2/opencv.hpp>
 #include "../src/io/image_recordio.h"
 #include <random>
+
+double n = 0, mean = 0, M2 = 0, stdev = 0;
+double nc = 0, meanc[3] = {0, 0, 0}, M2c[3] = {0, 0, 0}, stdevc[3] = {0, 0, 0};
+
+void OnlineMeanDeviation(cv::Mat res)
+{
+  for (int i = 0; i < res.cols; i++)
+  {
+    for (int j = 0; j < res.rows; j++)
+    {
+
+    	nc++;
+      cv::Vec3b intensity = res.at<cv::Vec3b>(j, i);
+      for (int k = 0; k < res.channels(); k++)
+      {
+        double x = intensity.val[k];
+
+        n = n + 1;
+        double delta = x - mean;
+        mean = mean + delta / (double)n;
+        M2 = M2 + delta * (x - mean);
+
+        double deltac = x - meanc[k];
+        meanc[k] += deltac / (double)nc;
+        M2c[k] += deltac * (x - meanc[k]);
+      }
+
+    }
+  }
+
+  stdev = sqrt(M2 / (n - 1));
+
+      for (int k = 0; k < res.channels(); k++)
+      {
+	      stdevc[k] = sqrt(M2c[k] / (nc - 1));      	
+      }
+}
+
+cv::Mat GetSquareImage( const cv::Mat& img, int target_width, int inter_method)
+{
+    int width = img.cols,
+       height = img.rows;
+
+    cv::Mat square = cv::Mat::zeros( target_width, target_width, img.type() );
+
+    int max_dim = ( width >= height ) ? width : height;
+    float scale = ( ( float ) target_width ) / max_dim;
+    cv::Rect roi;
+    if ( width >= height )
+    {
+        roi.width = target_width;
+        roi.x = 0;
+        int scaledHeight = floor(height * scale);
+        scaledHeight = scaledHeight > 0 ? scaledHeight : 1;
+        roi.height = scaledHeight;
+        roi.y = floor(( target_width - roi.height ) / 2);
+    }
+    else
+    {
+        roi.y = 0;
+        roi.height = target_width;
+        int scaledWidth = floor(width * scale);
+        scaledWidth = scaledWidth > 0 ? scaledWidth : 1;
+        roi.width = scaledWidth;
+        roi.x = floor(( target_width - roi.width ) / 2);
+    }
+
+    cv::resize( img, square( roi ), roi.size(), 0, 0, inter_method);
+
+    return square;
+}
+
+
 /*!
  *\brief get interpolation method with given inter_method, 0-CV_INTER_NN 1-CV_INTER_LINEAR 2-CV_INTER_CUBIC
  *\ 3-CV_INTER_AREA 4-CV_INTER_LANCZOS4 9-AUTO(cubic for enlarge, area for shrink, bilinear for others) 10-RAND(0-4)
@@ -52,9 +125,9 @@ int main(int argc, char *argv[]) {
            "\tnsplit=NSPLIT[default=1] used for part generation, logically split the image.list to NSPLIT parts by position\n"\
            "\tpart=PART[default=0] used for part generation, pack the images from the specific part in image.list\n"\
            "\tcenter_crop=CENTER_CROP[default=0] specify whether to crop the center image to make it square.\n"\
-           "\tquality=QUALITY[default=80] JPEG quality for encoding (1-100, default: 80) or PNG compression for encoding (1-9, default: 3).\n"\
+           "\tquality=QUALITY[default=100] JPEG quality for encoding (1-100, default: 80) or PNG compression for encoding (1-9, default: 3).\n"\
            "\tencoding=ENCODING[default='.jpg'] Encoding type. Can be '.jpg' or '.png'\n"\
-           "\tinter_method=INTER_METHOD[default=1] NN(0) BILINEAR(1) CUBIC(2) AREA(3) LANCZOS4(4) AUTO(9) RAND(10).\n"\
+           "\tinter_method=INTER_METHOD[default=9] NN(0) BILINEAR(1) CUBIC(2) AREA(3) LANCZOS4(4) AUTO(9) RAND(10).\n"\
            "\tunchanged=UNCHANGED[default=0] Keep the original image encoding, size and color. If set to 1, it will ignore the others parameters.\n");
     return 0;
   }
@@ -63,10 +136,10 @@ int main(int argc, char *argv[]) {
   int nsplit = 1;
   int partid = 0;
   int center_crop = 0;
-  int quality = 80;
+  int quality = 100;
   int color_mode = CV_LOAD_IMAGE_COLOR;
   int unchanged = 0;
-  int inter_method = CV_INTER_LINEAR;
+  int inter_method = 9; // CV_INTER_CUBIC;
   std::string encoding(".jpg");
   for (int i = 4; i < argc; ++i) {
     char key[128], val[128];
@@ -140,7 +213,6 @@ int main(int argc, char *argv[]) {
   const static size_t kBufferSize = 1 << 20UL;
   std::string root = argv[2];
   mxnet::io::ImageRecordIO rec;
-  size_t imcnt = 0;
   double tstart = dmlc::GetTime();
   dmlc::InputSplit *flist = dmlc::InputSplit::
       Create(argv[1], partid, nsplit, "text");
@@ -168,7 +240,8 @@ int main(int argc, char *argv[]) {
       LOG(INFO) << "JPEG encoding quality: " << quality;
   }
   dmlc::InputSplit::Blob line;
-
+  
+	size_t imcnt = 0;
   while (flist->NextRecord(&line)) {
     std::string sline(static_cast<char*>(line.dptr), line.size);
     std::istringstream is(sline);
@@ -205,6 +278,8 @@ int main(int argc, char *argv[]) {
       cv::Mat img = cv::imdecode(decode_buf, color_mode);
       CHECK(img.data != NULL) << "OpenCV decode fail:" << path;
       cv::Mat res = img;
+
+/*
       if (new_size > 0) {
         if (center_crop) {
           if (img.rows > img.cols) {
@@ -232,6 +307,13 @@ int main(int argc, char *argv[]) {
             }
         }
       }
+*/
+      int interpolation_method = GetInterMethod(inter_method, img.cols, img.rows, new_size, new_size, prnd);      
+      res = GetSquareImage(img, new_size, interpolation_method);
+      OnlineMeanDeviation(res);
+//      cv::imwrite("pic.jpg", res);
+//      getline();
+
       encode_buf.clear();
       CHECK(cv::imencode(encoding, res, encode_buf, encode_params));
       size_t bsize = blob.size();
@@ -247,11 +329,21 @@ int main(int argc, char *argv[]) {
     writer.WriteRecord(BeginPtr(blob), blob.size());
     // write header
     ++imcnt;
-    if (imcnt % 1000 == 0) {
+    if (imcnt % 5000 == 0) {
       LOG(INFO) << imcnt << " images processed, " << GetTime() - tstart << " sec elapsed";
+	  LOG(INFO) << "Mean: " << mean << " , Standard Deviation: " << stdev;
+	  LOG(INFO) << "Blue Mean: " << meanc[0] << " , Standard Deviation: " << stdevc[0];
+	  LOG(INFO) << "Green Mean: " << meanc[1] << " , Standard Deviation: " << stdevc[1];
+	  LOG(INFO) << "Red Mean: " << meanc[2] << " , Standard Deviation: " << stdevc[2];
     }
   }
+
   LOG(INFO) << "Total: " << imcnt << " images processed, " << GetTime() - tstart << " sec elapsed";
+  LOG(INFO) << "Mean: " << mean << " , Standard Deviation: " << stdev;
+  LOG(INFO) << "Blue Mean: " << meanc[0] << " , Standard Deviation: " << stdevc[0];
+  LOG(INFO) << "Green Mean: " << meanc[1] << " , Standard Deviation: " << stdevc[1];
+  LOG(INFO) << "Red Mean: " << meanc[2] << " , Standard Deviation: " << stdevc[2];
+
   delete fo;
   delete flist;
   return 0;

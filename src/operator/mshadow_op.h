@@ -14,301 +14,260 @@ namespace op {
 namespace mshadow_op {
 /*! \brief identity Operation */
 struct identity {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(a);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return a;
   }
 };
 
 struct identity_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(1.0f);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 1.0f;
   }
 };
 
 
 struct negation {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(-a);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return -a;
   }
 };
 
 /*! \brief sigmoid unit */
 struct sigmoid {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(1.0f / (1.0f + expf(-a)));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 1.0f / (1.0f + expf(-a));
   }
 };
 struct sigmoid_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(a * (1.0f - a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return a * (1.0f - a);
   }
 };
 /*! \brief Rectified Linear Operation */
 struct relu {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(a > 0.0f ? a : 0.0f);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return a > 0.0f ? a : 0.0f;
   }
 };
 struct relu_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(a > 0.0f ? 1.0f : 0.0f);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return a > 0.0f ? 1.0f : 0.0f;
   }
 };
 
 /*! \brief Leaky ReLU Operation */
 struct xelu {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a > 0.0f ? a : a * b);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a > 0.0f ? a : a * b;
   }
 };
 
 struct xelu_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a > 0.0f ? 1.0f : b);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a > 0.0f ? 1.0f : b;
   }
 };
 
 /*! \brief Exponential Linear Unit */
 struct elu {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType x, DType a) {
-    return DType(x > 0.0f ? x : a * (expf(x) - 1.0f));
+  MSHADOW_XINLINE static real_t Map(real_t x, real_t a) {
+    return x > 0.0f ? x : a * (expf(x) - 1.0f);
   }
 };
 
 struct elu_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType x, DType a) {
-    return DType(x > 0.0f ? 1.0f : a * expf(x));
+  MSHADOW_XINLINE static real_t Map(real_t x, real_t a) {
+    return x > 0.0f ? 1.0f : a * expf(x);
   }
 };
 
 struct tanh {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(tanhf( a ));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return tanhf( a );
   }
 };
 
 struct tanh_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(1.0f - a * a);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 1.0f - a * a;
   }
 };
 
 /*! \brief SoftReLU, also known as softplus activation. */
 struct softrelu {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(log1pf(expf(a)));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return log1pf(expf(a));
   }
 };
 struct softrelu_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(1.0f - expf(-a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 1.0f - expf(-a);
   }
 };
 
 struct exp {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(expf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return expf(a);
   }
 };
 
 struct log {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(logf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return logf(a);
   }
 };
 
 struct log_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(1.0f / a);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 1.0f / a;
   }
 };
 
 struct cos {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(cosf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return cosf(a);
   }
 };
 
 struct cos_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(-sinf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return -sinf(a);
   }
 };
 
 struct sin {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(sinf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return sinf(a);
   }
 };
 
 struct sin_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(cosf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return cosf(a);
   }
 };
 struct square {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(a * a);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return a * a;
   }
 };
 
 struct square_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(2.0f * a);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 2.0f * a;
   }
 };
 
 /*! \brief used for generate Bernoulli mask */
 struct threshold {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a < b ? 1.0f : 0.0f);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a < b ? 1.0f : 0.0f;
   }
 };
 
 /*! \brief used for generate element of abs */
 struct abs {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(fabsf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return fabsf(a);
   }
 };
 
 /*! \brief used for generate element of power */
 struct sign {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    if (a < 0.0f) return DType(-1.0f);
-    if (a > 0.0f) return DType(1.0f);
-    return DType(0.0f);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    if (a < 0.0f) return -1.0f;
+    if (a > 0.0f) return 1.0f;
+    return 0.0f;
   }
 };
 struct sign_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(0.0f);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 0.0f;
   }
 };
 /*! \brief used for generate element of power */
 struct power {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(powf( a, b ));
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return powf( a, b );
   }
 };
 
 /*! \brief used for generate element of maximum */
 struct maximum {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a > b ? a : b);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a > b ? a : b;
   }
 };
 
 struct maximum_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a > b ? 1 : 0);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a > b ? 1 : 0;
   }
 };
 
 /*! \brief used for generate element of minimum */
 struct minimum {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a < b ? a : b);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a < b ? a : b;
   }
 };
 struct minimum_grad  {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a < b ? 1 : 0);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a < b ? 1 : 0;
   }
 };
 
 /*!\ \brief used for generate element sqrt */
 struct square_root {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(sqrtf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return sqrt(a);
   }
 };
 
 struct square_root_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(0.5f / a);
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 0.5f / a;
   }
 };
 
 /*!\ \brief used for generate element sqrt */
 struct reciprocal_square_root {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(1.0/sqrtf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return 1.0/sqrt(a);
   }
 };
 
 struct reciprocal_square_root_grad {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(-(1.0 / (2.0 * a * sqrtf(a))));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return -(1.0 / (2.0 * a * sqrt(a)));
   }
 };
 
 /*! \brief used for generate element of round */
 struct round {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(roundf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return roundf(a);
   }
 };
 
 /*! \brief used for generate element of ceil */
 struct ceil {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(ceilf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return ceilf(a);
   }
 };
 
 /*! \brief used for generate element of floor */
 struct floor {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a) {
-    return DType(floorf(a));
+  MSHADOW_XINLINE static real_t Map(real_t a) {
+    return floorf(a);
   }
 };
 
 /*! \brief used for generate gradient of MAE loss*/
 struct minus_sign {
-  template<typename DType>
-  MSHADOW_XINLINE static DType Map(DType a, DType b) {
-    return DType(a-b > 0.0f ? 1.0f : -1.0f);
+  MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
+    return a-b > 0.0f ? 1.0f : -1.0f;
   }
 };
 

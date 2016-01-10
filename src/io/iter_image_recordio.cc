@@ -137,7 +137,10 @@ class ImageRecordIOParser {
   }
   ~ImageRecordIOParser(void) {
     // can be nullptr
-    delete label_map_;
+    if(label_map_ != nullptr)
+    {
+      delete label_map_;
+    }
     delete source_;
     for (size_t i = 0; i < augmenters_.size(); ++i) {
       delete augmenters_[i];

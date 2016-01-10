@@ -99,7 +99,6 @@ class ConcatOp : public Operator {
     Stream<xpu> *s = ctx.get_stream<xpu>();
     std::vector<Tensor<xpu, 4> > grad_in(size_);
     Tensor<xpu, 4> grad;
-    std::vector<bool> mask(size_, true);
     if (out_grad[concat_enum::kOut].ndim() < 4) {
       uint32_t dim = 0;
       for (int i = 0; i < size_; ++i) {
@@ -108,15 +107,8 @@ class ConcatOp : public Operator {
           dshape = Shape4(in_grad[i].shape_[0], in_grad[i].shape_[1], 1, 1);
         else
           dshape = Shape4(in_grad[i].shape_[0], in_grad[i].shape_[1], in_grad[i].shape_[2], 1);
-        dim += in_grad[i].shape_[dimension_];
-        if (req[i] == kNullOp) {
-          // Input doesn't need a gradient, don't propagate any
-          mask[i] = false;
-          // set the dimension so that Split knows how much to advance
-          grad_in[i].shape_[dimension_] = dshape[dimension_];
-          continue;
-        }
         grad_in[i] = in_grad[i].get_with_shape<xpu, 4, real_t>(dshape, s);
+        dim += in_grad[i].shape_[dimension_];
         CHECK_EQ(req[i], kWriteTo);
       }
       Shape<4> dshape_out;
@@ -130,19 +122,12 @@ class ConcatOp : public Operator {
       grad = out_grad[concat_enum::kOut].get_with_shape<xpu, 4, real_t>(dshape_out, s);
     } else {
       for (int i = 0; i < size_; ++i) {
-        if (req[i] == kNullOp) {
-          // Input doesn't need a gradient, don't propagate any
-          mask[i] = false;
-          // set the dimension so that Split knows how much to advance
-          grad_in[i].shape_[dimension_] = in_grad[i].shape_[dimension_];
-          continue;
-        }
         grad_in[i] = in_grad[i].get<xpu, 4, real_t>(s);
         CHECK_EQ(req[i], kWriteTo);
       }
       grad = out_grad[concat_enum::kOut].get<xpu, 4, real_t>(s);
     }
-    Split(grad, &grad_in, dimension_, mask);
+    Split(grad, &grad_in, dimension_);
   }
 
  private:

@@ -33,13 +33,12 @@ def get_ranksel(model, ratio):
   for node in nodes:
     if node['op'] == 'Convolution':        
       input_nodes = [nodes[int(j[0])] for j in node['inputs']]
-      data = [input_node for input_node in input_nodes\
+      data = [input_node['name'] for input_node in input_nodes\
                                   if not input_node['name'].startswith(node['name'])][0]      
-
-      if utils.is_input(data):
+      if utils.is_input(node):
         ishape = (3, 224, 224)
       else:
-        ishape = out_shape_dic[data['name'] + '_output'][1:]
+        ishape = out_shape_dic[data + '_output'][1:]
       C.append(calc_complexity(ishape, node))
       D.append(int(node['param']['num_filter']))
       S.append(calc_eigenvalue(model, node))
@@ -82,6 +81,6 @@ def get_ranksel(model, ratio):
   res = [0]*n
   nowc = target_c
   for i in xrange(n-1,-1,-1):    
-    res[i] = dpc[i][nowc][0] + 1
+    res[i] = dpc[i][nowc][0]
     nowc = dpc[i][nowc][1]
   return dict(zip(conv_names, res))

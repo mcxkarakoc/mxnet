@@ -39,6 +39,14 @@ struct ImageNormalizeParam :  public dmlc::Parameter<ImageNormalizeParam> {
   float mean_b;
   /*! \brief mean value for alpha channel */
   float mean_a;
+  /*! \brief standard deviation for r channel */
+  float std_r;
+  /*! \brief standard deviation for g channel */
+  float std_g;
+  /*! \brief standard deviation for b channel */
+  float std_b;
+  /*! \brief standard deviation for alpha channel */
+  float std_a;
   /*! \brief scale on color space */
   float scale;
   /*! \brief maximum ratio of contrast variation */
@@ -65,6 +73,14 @@ struct ImageNormalizeParam :  public dmlc::Parameter<ImageNormalizeParam> {
         .describe("Augmentation Param: Mean value on B channel.");
     DMLC_DECLARE_FIELD(mean_a).set_default(0.0f)
         .describe("Augmentation Param: Mean value on Alpha channel.");
+    DMLC_DECLARE_FIELD(std_r).set_default(1.0f)
+        .describe("Augmentation Param: Standard deviation value on R channel.");
+    DMLC_DECLARE_FIELD(std_g).set_default(1.0f)
+        .describe("Augmentation Param: Standard deviation value on G channel.");
+    DMLC_DECLARE_FIELD(std_b).set_default(1.0f)
+        .describe("Augmentation Param: Standard deviation value on B channel.");
+    DMLC_DECLARE_FIELD(std_a).set_default(1.0f)
+        .describe("Augmentation Param: Standard deviation value on Alpha channel.");
     DMLC_DECLARE_FIELD(scale).set_default(1.0f)
         .describe("Augmentation Param: Scale in color space.");
     DMLC_DECLARE_FIELD(max_random_contrast).set_default(0.0f)
@@ -184,12 +200,16 @@ class ImageNormalizeIter : public IIterator<DataInst> {
         param_.mean_b > 0.0f || param_.mean_a > 0.0f) {
       // substract mean per channel
       data[0] -= param_.mean_r;
+      data[0] /= param_.std_r;
       if (data.shape_[0] >= 3) {
         data[1] -= param_.mean_g;
         data[2] -= param_.mean_b;
+        data[1] /= param_.std_g;        
+        data[2] /= param_.std_b;        
       }
       if (data.shape_[0] == 4) {
         data[3] -= param_.mean_a;
+        data[3] /= param_.std_a;        
       }
       if ((param_.rand_mirror && coin_flip(rnd_)) || param_.mirror) {
         outimg_ = mirror(data * contrast + illumination) * param_.scale;

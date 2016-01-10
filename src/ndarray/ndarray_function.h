@@ -43,8 +43,7 @@ struct Div : public BinaryBase {
 
 struct ClipMin : public BinaryBase {
   struct mshadow_op {
-    template<typename DType>
-    MSHADOW_XINLINE static DType Map(DType a, DType b) {
+    MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
       if (a < b) {
         return b;
       } else {
@@ -56,8 +55,7 @@ struct ClipMin : public BinaryBase {
 
 struct ClipMax : public BinaryBase {
   struct mshadow_op {
-    template<typename DType>
-    MSHADOW_XINLINE static DType Map(DType a, DType b) {
+    MSHADOW_XINLINE static real_t Map(real_t a, real_t b) {
       if (a > b) {
         return b;
       } else {
